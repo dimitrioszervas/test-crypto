@@ -134,6 +134,21 @@ function App() {
   
   async function handleClick() {
    
+    // Function to encrypt a shard with a given CryptoKey
+    async function encryptShard(shard, cryptoKey) {
+      const algo = { name: "AES-GCM", iv: src, tagLength: 128 };
+      const ciphertext = await crypto.subtle.encrypt(algo, cryptoKey, new Uint8Array(shard));
+      return new Uint8Array(ciphertext);
+    }
+
+    // Function to encrypt a shard with a given CryptoKey
+    async function decryptShard(encrypted, cryptoKey) {
+      const algo = { name: "AES-GCM", iv: src, tagLength: 128 };
+      const ciphertext = await crypto.subtle.decrypt(algo, cryptoKey, new Uint8Array(encrypted));
+      return new Uint8Array(ciphertext);
+    }
+    
+
     const n = 3;
     let [encrypts, signs, src] = await generateKeys("secret", n);
     
@@ -148,6 +163,19 @@ function App() {
       let raw = new Uint8Array(await window.crypto.subtle.exportKey("raw", signs[i]));
       console.log("sign[", i, "]: ", raw);
     }
+
+    let data = "Test Ecryption";
+    let dataBytes = new TextEncoder().encode(data);
+
+    console.log("Data bytes: ", dataBytes);
+
+    let encryptedShard = await encryptShard(dataBytes, encrypts[1]);
+
+    console.log("Encrypted bytes: ", encryptedShard);
+
+    let decryptedShard = await decryptShard(encryptedShard, encrypts[1]);
+
+    console.log("Decrypted bytes: ", decryptedShard);
   }
 
   return (
