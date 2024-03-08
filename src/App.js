@@ -2,6 +2,7 @@ import './App.css';
 
 // fucntion to generate n keys.
 const generateNKeys = async (n, salt, type, baseKey) => {
+
   try {
     
     let derivedKeyAlgo, keyUsage, info;
@@ -41,11 +42,9 @@ const generateNKeys = async (n, salt, type, baseKey) => {
   }
 };
 
-function App() {
-  
-  async function handleClick() {
-  
-    const secretString = "secret";
+const generateKeys = async(secretText, numberOfShards) => {
+  try {
+    const secretString = secretText;
     let saltString  = "";
 
     console.log("secret string: ", secretString);
@@ -96,7 +95,7 @@ function App() {
 
     console.log("sign: ", signRaw);
 
-    let sign = await window.crypto.subtle.importKey("raw", signRaw, "HKDF", false, [
+    let sign = await window.crypto.subtle.importKey("raw", signAB, "HKDF", false, [
       "deriveKey",
     ]);
 
@@ -116,14 +115,30 @@ function App() {
 
     console.log("encrypt: ", encryptRaw);
 
-    let encrypt = await window.crypto.subtle.importKey("raw", encryptRaw, "HKDF", false, [  
+    let encrypt = await window.crypto.subtle.importKey("raw", encryptAB, "HKDF", false, [  
       "deriveKey",
     ]);
     
-    let n = 3;
-    const encrypts = await generateNKeys(n, salt, "encrypt", encrypt);      
-    const signs = await generateNKeys(n, salt, "sign", sign);
+    let nEncryptKeys = numberOfShards;
+    let nSignKeys = numberOfShards + 1;
+    const encrypts = await generateNKeys(nEncryptKeys, salt, "encrypt", encrypt);      
+    const signs = await generateNKeys(nSignKeys, salt, "sign", sign);  
+ 
+    return [encrypts, signs, src];
 
+  } catch (error) {
+    console.error("Error in generateKeys:", error.message);
+    throw error;
+  }
+}
+
+function App() {
+  
+  async function handleClick() {
+   
+    const n = 3;
+    let [encrypts, signs, src] = await generateKeys("secret", n);
+    
     console.log("encrypts: ");
     for (let i=0; i < encrypts.length; i++) {
       let raw = new Uint8Array(await window.crypto.subtle.exportKey("raw", encrypts[i]));
@@ -144,7 +159,7 @@ function App() {
       border: '1px solid gray',
       borderRadius: '5px'
     }}>
-      Send data to backend
+      Run Test
     </div>
   );
 }
