@@ -19,7 +19,7 @@ const generateNKeys = async (n, salt, type, baseKey) => {
     let keys = []; // array to store n keys
 
     // for loop to generate n keys
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i <= n; i++) {
       // here we are creating a key using HKDF algorithm
       const key = await window.crypto.subtle.deriveKey(
         {
@@ -42,7 +42,7 @@ const generateNKeys = async (n, salt, type, baseKey) => {
   }
 };
 
-const generateKeys = async(secretText, numberOfShards) => {
+const generateKeys = async(secretText, n) => {
   try {
     const secretString = secretText;
     let saltString  = "";
@@ -118,11 +118,9 @@ const generateKeys = async(secretText, numberOfShards) => {
     let encrypt = await window.crypto.subtle.importKey("raw", encryptAB, "HKDF", false, [  
       "deriveKey",
     ]);
-    
-    let nEncryptKeys = numberOfShards;
-    let nSignKeys = numberOfShards + 1;
-    const encrypts = await generateNKeys(nEncryptKeys, salt, "encrypt", encrypt);      
-    const signs = await generateNKeys(nSignKeys, salt, "sign", sign);  
+      
+    const encrypts = await generateNKeys(n, salt, "encrypt", encrypt);      
+    const signs = await generateNKeys(n, salt, "sign", sign);  
  
     return [encrypts, signs, src];
 

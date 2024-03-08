@@ -71,7 +71,7 @@ const generateKeys = async(secretString, n) => {
     const encrypts = await generateNKeys(n, srcAB, "encrypt", encrypt);
     const signs = await generateNKeys(n, srcAB, "sign", sign);
 
-    const src = Uint8Array(srcAB);
+    const src = new Uint8Array(srcAB);
 
     return [encrypts, signs, src];
 
