@@ -55,11 +55,9 @@ const generateNKeys = async (n, salt, type, baseKey) => {
   }
 };
 
-function App() {
-  async function handleClick() {
-    const secretString = "secret";
+const generateKeys = async(secretString, numberOfShards) => {
+  try {
     const saltString = "";
-
     const secret = await importSecretKey(secretString);
 
     // Deriving bits for src, sign, and encrypt
@@ -70,9 +68,25 @@ function App() {
     const sign = await importSecretKey(new Uint8Array(signAB));
     const encrypt = await importSecretKey(new Uint8Array(encryptAB));
 
+    const nEncryptKeys = numberOfShards;
+    const nSignKeys = numberOfShards + 1;
+    const encrypts = await generateNKeys(nEncryptKeys, srcAB, "encrypt", encrypt);
+    const signs = await generateNKeys(nSignKeys, srcAB, "sign", sign);
+
+    const src = Uint8Array(srcAB);
+
+    return [encrypts, signs, src];
+
+  } catch (error) {
+    console.error("Error in generateKeys:", error.message);
+    throw error;
+  }
+}
+function App() {
+  async function handleClick() {
+    
     const n = 3;
-    const encrypts = await generateNKeys(n, srcAB, "encrypt", encrypt);
-    const signs = await generateNKeys(n, srcAB, "sign", sign);
+    let [encrypts, signs, src] = await generateKeys("secret", n);
 
     // Example of how to use the generated keys
     console.log("Generated keys:");
