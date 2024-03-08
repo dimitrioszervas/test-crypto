@@ -135,17 +135,27 @@ function App() {
   async function handleClick() {
    
     // Function to encrypt a shard with a given CryptoKey
-    async function encryptShard(shard, cryptoKey) {
-      const algo = { name: "AES-GCM", iv: src, tagLength: 128 };
-      const ciphertext = await crypto.subtle.encrypt(algo, cryptoKey, new Uint8Array(shard));
+    async function encryptShard(shard, cryptoKey, srcIn) {
+      
+      let iv = new Uint8Array(12);     
+      for (let i = 0; i < srcIn.length; i++) {
+        iv[i] = srcIn[i].length;
+      }
+      const algo = { name: "AES-GCM", iv: iv, tagLength: 128 };
+      const ciphertext = await crypto.subtle.encrypt(algo, cryptoKey, shard);
       return new Uint8Array(ciphertext);
     }
 
-    // Function to encrypt a shard with a given CryptoKey
-    async function decryptShard(encrypted, cryptoKey) {
-      const algo = { name: "AES-GCM", iv: src, tagLength: 128 };
-      const ciphertext = await crypto.subtle.decrypt(algo, cryptoKey, new Uint8Array(encrypted));
-      return new Uint8Array(ciphertext);
+    // Function to decrypt a shard with a given CryptoKey
+    async function decryptShard(encrypted, cryptoKey, srcIn) {
+      
+      let iv = new Uint8Array(12);
+      for (let i = 0; i < srcIn.length; i++) {
+        iv[i] = srcIn[i].length;
+      }
+      const algo = { name: "AES-GCM", iv: iv, tagLength: 128 };
+      const plaintext = await crypto.subtle.decrypt(algo, cryptoKey, encrypted);
+      return new Uint8Array(plaintext);
     }
     
 
@@ -169,11 +179,11 @@ function App() {
 
     console.log("Data bytes: ", dataBytes);
 
-    let encryptedShard = await encryptShard(dataBytes, encrypts[1]);
+    let encryptedShard = await encryptShard(dataBytes, encrypts[1], src);
 
     console.log("Encrypted bytes: ", encryptedShard);
 
-    let decryptedShard = await decryptShard(encryptedShard, encrypts[1]);
+    let decryptedShard = await decryptShard(encryptedShard, encrypts[1], src);
 
     console.log("Decrypted bytes: ", decryptedShard);
   }
